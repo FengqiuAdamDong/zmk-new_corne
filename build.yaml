@@ -9,3 +9,14 @@ include:
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
+  # --- temporary display debugging: remove once the screen is fixed ---
+  - board: nice_nano_v2
+    shield: eyelash_corne_left nice_view
+    snippet: zmk-usb-logging
+    cmake-args: -DCONFIG_DISPLAY_LOG_LEVEL_DBG=y -DCONFIG_LOG_MODE_IMMEDIATE=y
+    artifact-name: eyelash_corne_left_logging
+  - board: nice_nano_v2
+    shield: eyelash_corne_right nice_view
+    snippet: zmk-usb-logging
+    cmake-args: -DCONFIG_DISPLAY_LOG_LEVEL_DBG=y -DCONFIG_LOG_MODE_IMMEDIATE=y
+    artifact-name: eyelash_corne_right_logging
