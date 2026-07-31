@@ -1,0 +1,50 @@
+/*
+*
+* Copyright (c) 2026 The ZMK Contributors
+* SPDX-License-Identifier: MIT
+*
+* I2C OLED variant of the Eyelash Corne display header.
+*
+* The display header carries P0.17 and P0.20, which are the same two pins the
+* nice!view uses for MOSI/SCK. Use this shield INSTEAD of nice_view:
+*
+*     shield: eyelash_corne_left eyelash_corne_oled
+*
+* i2c0_default / i2c0_sleep (SDA P0.17, SCL P0.20) come from the nice_nano_v2
+* board definition, so this shield is specific to that board.
+*/
+
+/ {
+    chosen {
+        zephyr,display = &oled;
+    };
+};
+
+&i2c0 {
+    status = "okay";
+    compatible = "nordic,nrf-twi";
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    oled: ssd1306@3c {
+        compatible = "solomon,ssd1306fb";
+        reg = <0x3c>;
+        width = <128>;
+        height = <64>;
+        segment-offset = <0>;
+        page-offset = <0>;
+        display-offset = <0>;
+        multiplex-ratio = <63>;
+        prechargep = <0x22>;
+        segment-remap;
+        com-invdir;
+
+        /*
+         * For a 0.91" 128x32 panel instead, use:
+         *     height = <32>;
+         *     multiplex-ratio = <31>;
+         * and add: com-sequential;
+         */
+    };
+};

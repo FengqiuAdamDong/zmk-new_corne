@@ -9,7 +9,15 @@ include:
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
-  # --- temporary display debugging: remove once the screen is fixed ---
+  # --- display debugging: remove these once the screen is fixed ---
+  # Test build for an I2C SSD1306 OLED instead of a nice!view.
+  - board: nice_nano_v2
+    shield: eyelash_corne_left eyelash_corne_oled
+    artifact-name: eyelash_corne_left_oled
+  - board: nice_nano_v2
+    shield: eyelash_corne_right eyelash_corne_oled
+    artifact-name: eyelash_corne_right_oled
+  # nice!view builds with USB logging, to see why the SPI display stays dark.
   - board: nice_nano_v2
     shield: eyelash_corne_left nice_view
     snippet: zmk-usb-logging
