@@ -1,8 +1,18 @@
 ---
 # This keyboard has an I2C SSD1306 OLED on the display header, not a nice!view,
 # so every build uses the eyelash_corne_oled shield. nice_oled supplies the
-# vertical (90-degree rotated) status screen; its canvas and widget positions
-# are set for a 128x64 panel, since its defaults target a 160x68 nice!view.
+# vertical (90-degree rotated) status screen, with its full default widget set:
+# BT profile, battery, WPM + bongo cat, modifiers, HID indicators and layer.
+#
+# Only two things are overridden. The canvas is set to this panel (64x128;
+# nice_oled defaults to 68x160 for a nice!view), and the layer (146) and
+# profile (137) widgets are pulled inside 128 -- every other stock position
+# already fits.
+#
+# For the exact look in the project's gallery photos, swap the bongo cat for
+# Luna and turn the WPM gauge on:
+#   -DCONFIG_NICE_OLED_WIDGET_WPM_LUNA=y
+#   -DCONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER=y
 #
 # NOTE: the whole of this file becomes the GitHub Actions build matrix, so
 # "include" must stay the only top-level key (no YAML anchors).
@@ -13,17 +23,8 @@ include:
       -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
-      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=40
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=27
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=26
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=26
       -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=110
       -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=117
-      -DCONFIG_NICE_OLED_WIDGET_WPM=n
-      -DCONFIG_NICE_OLED_WIDGET_HID_INDICATORS=n
-      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS=n
-      -DCONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL=n
-      -DCONFIG_NICE_OLED_WIDGET_STATIC_IMAGE_PERIPHERAL=n
     artifact-name: eyelash_corne_right
   - board: nice_nano_v2
     shield: eyelash_corne_left eyelash_corne_oled nice_oled
@@ -33,17 +34,8 @@ include:
       -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
-      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=40
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=27
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=26
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=26
       -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=110
       -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=117
-      -DCONFIG_NICE_OLED_WIDGET_WPM=n
-      -DCONFIG_NICE_OLED_WIDGET_HID_INDICATORS=n
-      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS=n
-      -DCONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL=n
-      -DCONFIG_NICE_OLED_WIDGET_STATIC_IMAGE_PERIPHERAL=n
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
