@@ -41,15 +41,11 @@
         com-invdir;
 
         /*
-         * nice_oled draws dark content on a white canvas, which on an OLED
-         * lights every background pixel. Inverting at the controller (SSD1306
-         * command 0xA7) flips the finished framebuffer, so text, rectangles
-         * and the INDEXED_1BIT artwork all end up lit on a dark background.
-         * Doing it here rather than via CONFIG_NICE_OLED_WIDGET_INVERTED is
-         * deliberate: that option only recolours text and rects, leaving the
-         * images inverted relative to everything else.
+         * No inversion-on here: our status screen draws light content on a
+         * dark background, which is already the right way round for an OLED.
+         * nice_oled needed the controller-level invert (SSD1306 command 0xA7)
+         * because it draws dark content on a white canvas.
          */
-        inversion-on;
 
         /*
          * For a 0.91" 128x32 panel instead, use:

@@ -14,9 +14,27 @@ config SSD1306
     default y
 
 # Only takes effect with the built-in status screen; ignored when a custom
-# screen such as nice_oled replaces it.
+# screen replaces it.
 config ZMK_WIDGET_BATTERY_STATUS_SHOW_PERCENTAGE
     default y
+
+# Our own status screen, authored for this 128x64 panel in portrait. Selecting
+# ZMK_DISPLAY_STATUS_SCREEN_CUSTOM turns it on. Do not combine with another
+# shield that also provides zmk_display_status_screen(), such as nice_oled.
+config ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
+    imply EYELASH_CORNE_OLED_STATUS_SCREEN
+
+config EYELASH_CORNE_OLED_STATUS_SCREEN
+    bool "Eyelash Corne OLED status screen"
+    select LV_FONT_UNSCII_16
+    select LV_USE_CANVAS
+    select LV_USE_LABEL
+    select LV_USE_IMG
+
+# ZMK only defaults this for the built-in screen; a custom screen needs it too
+# or LVGL has no heap to draw the labels with.
+config LV_Z_MEM_POOL_SIZE
+    default 4096 if ZMK_DISPLAY_STATUS_SCREEN_CUSTOM
 
 choice ZMK_DISPLAY_WORK_QUEUE
     default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
