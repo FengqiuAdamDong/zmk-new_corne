@@ -40,9 +40,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define IS_CENTRAL (!IS_ENABLED(CONFIG_ZMK_SPLIT) || IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL))
 
 #if IS_CENTRAL
-#include <zmk/ble.h>
 #include <zmk/endpoints.h>
-#include <zmk/events/ble_active_profile_changed.h>
 #include <zmk/events/endpoint_changed.h>
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/keymap.h>
@@ -55,7 +53,8 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define PORTRAIT_W 64
 #define PORTRAIT_H 128
 
-#define PROFILE_COUNT 5
+/* How many letters of the layer name to show. */
+#define LAYER_NAME_CHARS 3
 
 /* On an OLED an unlit pixel is black, so the natural drawing order is light on
  * dark. Swap these two if the panel ever ends up inverted. */
@@ -63,11 +62,10 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define COLOR_FG lv_color_white()
 
 /* Vertical layout, in portrait coordinates. */
-#define Y_BATTERY_ICON 6
-#define Y_BATTERY_TEXT 32
-#define Y_ENDPOINT 56
-#define Y_PROFILES 82
-#define Y_LAYER 102
+#define Y_BATTERY_ICON 10
+#define Y_BATTERY_TEXT 44
+#define Y_ENDPOINT 72
+#define Y_LAYER 100
 #define Y_PERIPHERAL_LINK 60
 
 struct status_state {
@@ -75,10 +73,6 @@ struct status_state {
     bool charging;
 #if IS_CENTRAL
     struct zmk_endpoint_instance endpoint;
-    int profile_index;
-    bool profile_connected;
-    bool profiles_connected[PROFILE_COUNT];
-    bool profiles_bonded[PROFILE_COUNT];
     uint8_t layer_index;
     const char *layer_label;
 #else
@@ -132,30 +126,6 @@ static void draw_battery(lv_obj_t *canvas, const struct status_state *state) {
     lv_canvas_draw_rect(canvas, 54, Y_BATTERY_ICON + 7, 5, 8, &fg);
 }
 
-#if IS_CENTRAL
-/* Five squares: filled = active profile, hollow with a dot = connected,
- * hollow = bonded but disconnected, outline only = unused. */
-static void draw_profiles(lv_obj_t *canvas, const struct status_state *state) {
-    lv_draw_rect_dsc_t fg, bg;
-    init_rect(&fg, COLOR_FG);
-    init_rect(&bg, COLOR_BG);
-
-    for (int i = 0; i < PROFILE_COUNT; i++) {
-        int x = 4 + i * 12;
-
-        lv_canvas_draw_rect(canvas, x, Y_PROFILES, 10, 10, &fg);
-        if (i == state->profile_index) {
-            continue;
-        }
-
-        lv_canvas_draw_rect(canvas, x + 2, Y_PROFILES + 2, 6, 6, &bg);
-        if (state->profiles_connected[i]) {
-            lv_canvas_draw_rect(canvas, x + 3, Y_PROFILES + 3, 4, 4, &fg);
-        }
-    }
-}
-#endif
-
 static void rotate_canvas(lv_obj_t *canvas, lv_color_t cbuf[]) {
     static lv_color_t tmp[CANVAS * CANVAS];
     lv_img_dsc_t img;
@@ -186,20 +156,13 @@ static void draw_screen(struct zmk_widget_screen *widget) {
     draw_text(canvas, Y_BATTERY_TEXT, text);
 
 #if IS_CENTRAL
-    if (state->endpoint.transport == ZMK_TRANSPORT_USB) {
-        snprintf(text, sizeof(text), "USB");
-    } else {
-        snprintf(text, sizeof(text), state->profile_connected ? "BT %d" : "BT %d?",
-                 state->profile_index + 1);
-    }
-    draw_text(canvas, Y_ENDPOINT, text);
-
-    draw_profiles(canvas, state);
+    draw_text(canvas, Y_ENDPOINT,
+              state->endpoint.transport == ZMK_TRANSPORT_USB ? "USB" : "BT");
 
     if (state->layer_label != NULL && state->layer_label[0] != '\0') {
-        snprintf(text, sizeof(text), "%.8s", state->layer_label);
+        snprintf(text, sizeof(text), "%.*s", LAYER_NAME_CHARS, state->layer_label);
     } else {
-        snprintf(text, sizeof(text), "LAYER %d", state->layer_index);
+        snprintf(text, sizeof(text), "L%d", state->layer_index);
     }
     draw_text(canvas, Y_LAYER, text);
 #else
@@ -250,25 +213,15 @@ ZMK_SUBSCRIPTION(widget_battery_status, zmk_usb_conn_state_changed);
 
 #if IS_CENTRAL
 
-/* Endpoint and BLE profiles ------------------------------------------------ */
+/* Endpoint ----------------------------------------------------------------- */
 
 struct output_status_state {
     struct zmk_endpoint_instance endpoint;
-    int profile_index;
-    bool profile_connected;
-    bool profiles_connected[PROFILE_COUNT];
-    bool profiles_bonded[PROFILE_COUNT];
 };
 
 static void set_output_status(struct zmk_widget_screen *widget,
                               const struct output_status_state *state) {
     widget->state.endpoint = state->endpoint;
-    widget->state.profile_index = state->profile_index;
-    widget->state.profile_connected = state->profile_connected;
-    for (int i = 0; i < PROFILE_COUNT; i++) {
-        widget->state.profiles_connected[i] = state->profiles_connected[i];
-        widget->state.profiles_bonded[i] = state->profiles_bonded[i];
-    }
     draw_screen(widget);
 }
 
@@ -278,18 +231,7 @@ static void output_status_update_cb(struct output_status_state state) {
 }
 
 static struct output_status_state output_status_get_state(const zmk_event_t *_eh) {
-    struct output_status_state state = {
-        .endpoint = zmk_endpoints_selected(),
-        .profile_index = zmk_ble_active_profile_index(),
-        .profile_connected = zmk_ble_active_profile_is_connected(),
-    };
-
-    for (int i = 0; i < MIN(PROFILE_COUNT, ZMK_BLE_PROFILE_COUNT); i++) {
-        state.profiles_connected[i] = zmk_ble_profile_is_connected(i);
-        state.profiles_bonded[i] = !zmk_ble_profile_is_open(i);
-    }
-
-    return state;
+    return (struct output_status_state){.endpoint = zmk_endpoints_selected()};
 }
 
 ZMK_DISPLAY_WIDGET_LISTENER(widget_output_status, struct output_status_state,
@@ -297,9 +239,6 @@ ZMK_DISPLAY_WIDGET_LISTENER(widget_output_status, struct output_status_state,
 ZMK_SUBSCRIPTION(widget_output_status, zmk_endpoint_changed);
 #if IS_ENABLED(CONFIG_USB_DEVICE_STACK)
 ZMK_SUBSCRIPTION(widget_output_status, zmk_usb_conn_state_changed);
-#endif
-#if IS_ENABLED(CONFIG_ZMK_BLE)
-ZMK_SUBSCRIPTION(widget_output_status, zmk_ble_active_profile_changed);
 #endif
 
 /* Layer -------------------------------------------------------------------- */
