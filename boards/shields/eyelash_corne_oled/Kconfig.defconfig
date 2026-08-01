@@ -13,6 +13,11 @@ config I2C
 config SSD1306
     default y
 
+# Only takes effect with the built-in status screen; ignored when a custom
+# screen such as nice_oled replaces it.
+config ZMK_WIDGET_BATTERY_STATUS_SHOW_PERCENTAGE
+    default y
+
 choice ZMK_DISPLAY_WORK_QUEUE
     default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
 endchoice

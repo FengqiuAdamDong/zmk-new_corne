@@ -1,30 +1,57 @@
 ---
+# This keyboard has an I2C SSD1306 OLED on the display header, not a nice!view,
+# so every build uses the eyelash_corne_oled shield. nice_oled supplies the
+# vertical (90-degree rotated) status screen; its canvas and widget positions
+# are set for a 128x64 panel, since its defaults target a 160x68 nice!view.
+#
+# NOTE: the whole of this file becomes the GitHub Actions build matrix, so
+# "include" must stay the only top-level key (no YAML anchors).
 include:
   - board: nice_nano_v2
-    shield: eyelash_corne_right nice_view
+    shield: eyelash_corne_right eyelash_corne_oled nice_oled
+    cmake-args: >-
+      -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+      -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
+      -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=40
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=27
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=26
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=26
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=110
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=117
+      -DCONFIG_NICE_OLED_WIDGET_WPM=n
+      -DCONFIG_NICE_OLED_WIDGET_HID_INDICATORS=n
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS=n
+      -DCONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL=n
+      -DCONFIG_NICE_OLED_WIDGET_STATIC_IMAGE_PERIPHERAL=n
+    artifact-name: eyelash_corne_right
   - board: nice_nano_v2
-    shield: eyelash_corne_left nice_view
+    shield: eyelash_corne_left eyelash_corne_oled nice_oled
     snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_STUDIO_LOCKING=n
+    cmake-args: >-
+      -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_STUDIO_LOCKING=n
+      -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+      -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
+      -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=40
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=27
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=26
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=26
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=110
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=117
+      -DCONFIG_NICE_OLED_WIDGET_WPM=n
+      -DCONFIG_NICE_OLED_WIDGET_HID_INDICATORS=n
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_INDICATORS=n
+      -DCONFIG_NICE_OLED_WIDGET_ANIMATION_PERIPHERAL=n
+      -DCONFIG_NICE_OLED_WIDGET_STATIC_IMAGE_PERIPHERAL=n
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
-  # --- display debugging: remove these once the screen is fixed ---
-  # Test build for an I2C SSD1306 OLED instead of a nice!view.
+  # Fallback: same OLED hardware, ZMK's built-in horizontal status screen.
+  # Flash these if the nice_oled layout misbehaves.
   - board: nice_nano_v2
     shield: eyelash_corne_left eyelash_corne_oled
-    artifact-name: eyelash_corne_left_oled
+    artifact-name: eyelash_corne_left_oled_builtin
   - board: nice_nano_v2
     shield: eyelash_corne_right eyelash_corne_oled
-    artifact-name: eyelash_corne_right_oled
-  # nice!view builds with USB logging, to see why the SPI display stays dark.
-  - board: nice_nano_v2
-    shield: eyelash_corne_left nice_view
-    snippet: zmk-usb-logging
-    cmake-args: -DCONFIG_DISPLAY_LOG_LEVEL_DBG=y -DCONFIG_LOG_MODE_IMMEDIATE=y
-    artifact-name: eyelash_corne_left_logging
-  - board: nice_nano_v2
-    shield: eyelash_corne_right nice_view
-    snippet: zmk-usb-logging
-    cmake-args: -DCONFIG_DISPLAY_LOG_LEVEL_DBG=y -DCONFIG_LOG_MODE_IMMEDIATE=y
-    artifact-name: eyelash_corne_right_logging
+    artifact-name: eyelash_corne_right_oled_builtin
