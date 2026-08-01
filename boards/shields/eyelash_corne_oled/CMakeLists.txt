@@ -3,4 +3,8 @@ if(CONFIG_ZMK_DISPLAY AND CONFIG_EYELASH_CORNE_OLED_STATUS_SCREEN)
   zephyr_library_include_directories(${ZEPHYR_LVGL_MODULE_DIR})
   zephyr_library_include_directories(${CMAKE_SOURCE_DIR}/include)
   zephyr_library_sources(custom_status_screen.c)
+
+  if(CONFIG_ZMK_SPLIT AND NOT CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
+    zephyr_library_sources(bongo_cat.c)
+  endif()
 endif()

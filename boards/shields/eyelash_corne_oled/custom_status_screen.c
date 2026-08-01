@@ -45,6 +45,7 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #include <zmk/events/layer_state_changed.h>
 #include <zmk/keymap.h>
 #else
+#include "bongo_cat.h"
 #include <zmk/events/split_peripheral_status_changed.h>
 #include <zmk/split/bluetooth/peripheral.h>
 #endif
@@ -66,7 +67,12 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define Y_BATTERY_TEXT 44
 #define Y_ENDPOINT 72
 #define Y_LAYER 100
-#define Y_PERIPHERAL_LINK 60
+#define Y_PERIPHERAL_LINK 66
+#define Y_CAT 94
+
+/* Milliseconds per bongo cat frame on the peripheral. Each tick redraws and
+ * re-rotates the whole canvas, so slower is cheaper on the battery. */
+#define CAT_FRAME_MS 250
 
 struct status_state {
     uint8_t battery;
@@ -89,6 +95,10 @@ struct zmk_widget_screen {
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 static struct zmk_widget_screen status_widget;
+
+#if !IS_CENTRAL
+static uint8_t cat_frame;
+#endif
 
 static void init_label(lv_draw_label_dsc_t *dsc, const lv_font_t *font) {
     lv_draw_label_dsc_init(dsc);
@@ -167,10 +177,26 @@ static void draw_screen(struct zmk_widget_screen *widget) {
     draw_text(canvas, Y_LAYER, text);
 #else
     draw_text(canvas, Y_PERIPHERAL_LINK, state->connected ? "LINK" : "----");
+
+    lv_draw_img_dsc_t img_dsc;
+    lv_draw_img_dsc_init(&img_dsc);
+    lv_canvas_draw_img(canvas, (PORTRAIT_W - EYELASH_BONGO_CAT_W) / 2, Y_CAT,
+                       eyelash_bongo_cat_frames[cat_frame], &img_dsc);
 #endif
 
     rotate_canvas(canvas, widget->cbuf);
 }
+
+#if !IS_CENTRAL
+static void cat_timer_cb(lv_timer_t *timer) {
+    struct zmk_widget_screen *widget;
+
+    ARG_UNUSED(timer);
+
+    cat_frame = (cat_frame + 1) % EYELASH_BONGO_CAT_FRAMES;
+    SYS_SLIST_FOR_EACH_CONTAINER(&widgets, widget, node) { draw_screen(widget); }
+}
+#endif
 
 /* Battery ------------------------------------------------------------------ */
 
@@ -318,6 +344,7 @@ static int zmk_widget_screen_init(struct zmk_widget_screen *widget, lv_obj_t *pa
     widget_layer_status_init();
 #else
     widget_peripheral_status_init();
+    lv_timer_create(cat_timer_cb, CAT_FRAME_MS, NULL);
 #endif
 
     return 0;
