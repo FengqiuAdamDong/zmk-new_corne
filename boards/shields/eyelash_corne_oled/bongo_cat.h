@@ -10,7 +10,7 @@
 
 #include <lvgl.h>
 
-#define EYELASH_BONGO_CAT_FRAMES 6
+#define EYELASH_BONGO_CAT_FRAMES 2
 #define EYELASH_BONGO_CAT_W 50
 #define EYELASH_BONGO_CAT_H 26
 
