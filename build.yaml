@@ -1,18 +1,15 @@
 ---
-# This keyboard has an I2C SSD1306 OLED on the display header, not a nice!view,
-# so every build uses the eyelash_corne_oled shield. nice_oled supplies the
-# vertical (90-degree rotated) status screen, with its full default widget set:
-# BT profile, battery, WPM + bongo cat, modifiers, HID indicators and layer.
+# This keyboard has an I2C SSD1306 128x64 OLED on the display header, not a
+# nice!view, so every build uses the eyelash_corne_oled shield.
 #
-# Only two things are overridden. The canvas is set to this panel (64x128;
-# nice_oled defaults to 68x160 for a nice!view), and the layer (146) and
-# profile (137) widgets are pulled inside 128 -- every other stock position
-# already fits.
+# nice_oled draws into a portrait canvas and rotates it 90 degrees. The probe
+# build confirmed the mapping on this panel:
 #
-# For the exact look in the project's gallery photos, swap the bongo cat for
-# Luna and turn the WPM gauge on:
-#   -DCONFIG_NICE_OLED_WIDGET_WPM_LUNA=y
-#   -DCONFIG_NICE_OLED_WIDGET_WPM_SPEEDOMETER=y
+#     screen (x, y) = (CANVAS_HEIGHT - portrait_y, portrait_x)
+#
+# So portrait_y spreads widgets along the panel's 128px axis and portrait_x
+# along its 64px axis. Widgets are placed to use both fully; nice_oled's own
+# defaults only cover a 32-row band because it targets a 128x32 panel.
 #
 # NOTE: the whole of this file becomes the GitHub Actions build matrix, so
 # "include" must stay the only top-level key (no YAML anchors).
@@ -23,8 +20,8 @@ include:
       -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
-      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=110
-      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=117
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_X=16
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=30
     artifact-name: eyelash_corne_right
   - board: nice_nano_v2
     shield: eyelash_corne_left eyelash_corne_oled nice_oled
@@ -34,48 +31,57 @@ include:
       -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
-      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=110
-      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=117
+      -DCONFIG_NICE_OLED_WIDGET_WPM=n
+      -DCONFIG_NICE_OLED_WIDGET_HID_INDICATORS=n
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_X=25
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=6
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_X=25
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=6
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_X=25
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=6
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_X=16
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=30
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_X=17
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=56
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_X=20
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_Y=76
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X=8
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=108
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
-  # Probe build (left half only, temporary). Each widget is pinned to a known
-  # spot in the 64x128 portrait canvas so that what shows on the panel maps the
-  # visible area directly. nice_oled rotates the canvas 90 degrees, so portrait
-  # (x,y) should land at screen (128-y, x):
-  #
-  #   battery   (0,16)   -> far right, top edge
-  #   BT/USB    (0,48)   -> right of centre, top edge
-  #   layer     (0,80)   -> left of centre, top edge
-  #   profile   (32,16)  -> far right, halfway down
-  #   modifiers (32,112) -> far left, halfway down
-  #
-  # WPM/bongo cat and HID indicators are off so nothing else clutters it.
+  # Same layout, but nice_oled's epaper mode, which uses the 16px
+  # pixel_operator_mono font everywhere instead of dropping to 8px unscii for
+  # the layer and status text. Flash this one if the text is still too small.
   - board: nice_nano_v2
     shield: eyelash_corne_left eyelash_corne_oled nice_oled
     cmake-args: >-
       -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+      -DCONFIG_NICE_OLED_ON=n
+      -DCONFIG_NICE_EPAPER_ON=y
+      -DCONFIG_ZMK_DISPLAY_BLANK_ON_IDLE=n
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BACKGROUND=n
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_BIG=n
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
       -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
       -DCONFIG_NICE_OLED_WIDGET_WPM=n
       -DCONFIG_NICE_OLED_WIDGET_HID_INDICATORS=n
-      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_X=0
-      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=16
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_X=0
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=48
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_X=0
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=48
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_X=0
-      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=48
-      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X=0
-      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=80
-      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_X=32
-      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=16
-      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_X=32
-      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_Y=112
-    artifact-name: eyelash_corne_left_probe
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_X=25
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=6
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_X=25
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=6
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_X=25
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=6
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_X=16
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=30
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_X=17
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=56
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_X=20
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_Y=76
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X=8
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=108
+    artifact-name: eyelash_corne_left_bigfont
   # Fallback: same OLED hardware, ZMK's built-in horizontal status screen.
-  # Flash these if the nice_oled layout misbehaves.
   - board: nice_nano_v2
     shield: eyelash_corne_left eyelash_corne_oled
     artifact-name: eyelash_corne_left_oled_builtin
