@@ -39,17 +39,41 @@ include:
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
-  # Panel-size test: declares the display as 128x32 and runs nice_oled with
-  # NO overrides, which is exactly how mctechnology17/zmk-config drives it.
-  # If the panel really is 128x32, this fills the screen and looks like the
-  # project's gallery; the 128x64 builds above would then be using only the
-  # top half of a layout designed for a 32-row visible band.
+  # Probe build (left half only, temporary). Each widget is pinned to a known
+  # spot in the 64x128 portrait canvas so that what shows on the panel maps the
+  # visible area directly. nice_oled rotates the canvas 90 degrees, so portrait
+  # (x,y) should land at screen (128-y, x):
+  #
+  #   battery   (0,16)   -> far right, top edge
+  #   BT/USB    (0,48)   -> right of centre, top edge
+  #   layer     (0,80)   -> left of centre, top edge
+  #   profile   (32,16)  -> far right, halfway down
+  #   modifiers (32,112) -> far left, halfway down
+  #
+  # WPM/bongo cat and HID indicators are off so nothing else clutters it.
   - board: nice_nano_v2
-    shield: eyelash_corne_left eyelash_corne_oled32 nice_oled
-    artifact-name: eyelash_corne_left_oled32
-  - board: nice_nano_v2
-    shield: eyelash_corne_right eyelash_corne_oled32 nice_oled
-    artifact-name: eyelash_corne_right_oled32
+    shield: eyelash_corne_left eyelash_corne_oled nice_oled
+    cmake-args: >-
+      -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+      -DCONFIG_NICE_OLED_CUSTOM_CANVAS_WIDTH=64
+      -DCONFIG_NICE_OLED_CUSTOM_CANVAS_HEIGHT=128
+      -DCONFIG_NICE_OLED_WIDGET_WPM=n
+      -DCONFIG_NICE_OLED_WIDGET_HID_INDICATORS=n
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_X=0
+      -DCONFIG_NICE_OLED_WIDGET_BATTERY_CUSTOM_Y=16
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_X=0
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_CUSTOM_Y=48
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_X=0
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_BT_UNBONDED_CUSTOM_Y=48
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_X=0
+      -DCONFIG_NICE_OLED_WIDGET_OUTPUT_USB_CUSTOM_Y=48
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_X=0
+      -DCONFIG_NICE_OLED_WIDGET_LAYER_CUSTOM_Y=80
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_X=32
+      -DCONFIG_NICE_OLED_WIDGET_PROFILE_CUSTOM_Y=16
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_X=32
+      -DCONFIG_NICE_OLED_WIDGET_MODIFIERS_CUSTOM_Y=112
+    artifact-name: eyelash_corne_left_probe
   # Fallback: same OLED hardware, ZMK's built-in horizontal status screen.
   # Flash these if the nice_oled layout misbehaves.
   - board: nice_nano_v2
