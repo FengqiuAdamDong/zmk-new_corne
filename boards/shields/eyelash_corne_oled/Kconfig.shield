@@ -3,3 +3,7 @@
 
 config SHIELD_EYELASH_CORNE_OLED
     def_bool $(shields_list_contains,eyelash_corne_oled)
+
+# Same hardware, declared as a 128x32 panel instead of 128x64.
+config SHIELD_EYELASH_CORNE_OLED32
+    def_bool $(shields_list_contains,eyelash_corne_oled32)

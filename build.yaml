@@ -39,6 +39,17 @@ include:
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
+  # Panel-size test: declares the display as 128x32 and runs nice_oled with
+  # NO overrides, which is exactly how mctechnology17/zmk-config drives it.
+  # If the panel really is 128x32, this fills the screen and looks like the
+  # project's gallery; the 128x64 builds above would then be using only the
+  # top half of a layout designed for a 32-row visible band.
+  - board: nice_nano_v2
+    shield: eyelash_corne_left eyelash_corne_oled32 nice_oled
+    artifact-name: eyelash_corne_left_oled32
+  - board: nice_nano_v2
+    shield: eyelash_corne_right eyelash_corne_oled32 nice_oled
+    artifact-name: eyelash_corne_right_oled32
   # Fallback: same OLED hardware, ZMK's built-in horizontal status screen.
   # Flash these if the nice_oled layout misbehaves.
   - board: nice_nano_v2

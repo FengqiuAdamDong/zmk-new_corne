@@ -1,0 +1,45 @@
+/*
+*
+* Copyright (c) 2026 The ZMK Contributors
+* SPDX-License-Identifier: MIT
+*
+* Same display header as eyelash_corne_oled, but declared as a 0.91" 128x32
+* panel. This is the geometry nice_oled is actually designed around, and it
+* matches the reference configuration in mctechnology17/zmk-config: 128x32,
+* multiplex-ratio 31, com-sequential, inversion-on, and no widget position
+* overrides at all.
+*
+* Use this instead of eyelash_corne_oled:
+*
+*     shield: eyelash_corne_left eyelash_corne_oled32 nice_oled
+*/
+
+/ {
+    chosen {
+        zephyr,display = &oled;
+    };
+};
+
+&i2c0 {
+    status = "okay";
+    compatible = "nordic,nrf-twi";
+    pinctrl-0 = <&i2c0_default>;
+    pinctrl-1 = <&i2c0_sleep>;
+    pinctrl-names = "default", "sleep";
+
+    oled: ssd1306@3c {
+        compatible = "solomon,ssd1306fb";
+        reg = <0x3c>;
+        width = <128>;
+        height = <32>;
+        segment-offset = <0>;
+        page-offset = <0>;
+        display-offset = <0>;
+        multiplex-ratio = <31>;
+        prechargep = <0x22>;
+        segment-remap;
+        com-invdir;
+        com-sequential;
+        inversion-on;
+    };
+};
