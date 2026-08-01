@@ -68,11 +68,12 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #define Y_ENDPOINT 72
 #define Y_LAYER 100
 #define Y_PERIPHERAL_LINK 66
-#define Y_CAT 94
+#define Y_CAT (PORTRAIT_H - EYELASH_BONGO_CAT_H - 1)
 
-/* Milliseconds per bongo cat frame on the peripheral. Each tick redraws and
- * re-rotates the whole canvas, so slower is cheaper on the battery. */
-#define CAT_FRAME_MS 250
+/* Milliseconds per bongo cat frame on the peripheral. The source gif runs at
+ * 100ms, but each tick here redraws and re-rotates the whole canvas, so this
+ * is slowed down to keep the cost off the peripheral's battery. */
+#define CAT_FRAME_MS 200
 
 struct status_state {
     uint8_t battery;
