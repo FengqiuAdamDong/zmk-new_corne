@@ -27,6 +27,19 @@
     pinctrl-1 = <&i2c0_sleep>;
     pinctrl-names = "default", "sleep";
 
+    /*
+     * nice_nano.dtsi selects nordic,nrf-twi (no EasyDMA), so every byte on this
+     * bus costs an interrupt. At the 100kHz default a 1024-byte full-frame flush
+     * holds the bus ~90ms, and the peripheral redraws every CAT_FRAME_MS (200ms)
+     * -- roughly half the time, on the half that also has to get key events out
+     * over BLE. 400kHz is SSD1306 Fast Mode and cuts that to ~23ms.
+     *
+     * This does not fix key ordering (the display runs on its own preemptible
+     * work queue, see Kconfig.defconfig), it just stops the panel from burning
+     * interrupts and battery for no reason.
+     */
+    clock-frequency = <400000>;
+
     oled: ssd1306@3c {
         compatible = "solomon,ssd1306fb";
         reg = <0x3c>;
