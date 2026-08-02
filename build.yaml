@@ -1,32 +1,24 @@
 ---
-# This keyboard has an I2C SSD1306 128x64 OLED on the display header, not a
-# nice!view, so every build uses the eyelash_corne_oled shield.
+# TEMPORARY: OLEDs disabled to test whether the displays are behind the
+# split-half key ordering issue. To restore, put ` eyelash_corne_oled` back on
+# each shield line and re-add `-DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y`
+# to the cmake-args, plus the two *_oled_builtin fallback entries.
 #
-# The status screen is boards/shields/eyelash_corne_oled/custom_status_screen.c,
-# authored for this panel: a 64x128 portrait layout rotated 90 degrees, drawn
-# with rectangles and a bitmap font so it scales to 128x64 instead of using
-# artwork sized for a 128x32 display.
+# Dropping the shield is what turns the screens off: CONFIG_ZMK_DISPLAY=y lives
+# in boards/shields/eyelash_corne_oled/eyelash_corne_oled.conf, which is only
+# applied when that shield is in the list. The base eyelash_corne shield has no
+# display dependency of its own.
 #
 # NOTE: the whole of this file becomes the GitHub Actions build matrix, so
 # "include" must stay the only top-level key (no YAML anchors).
 include:
   - board: nice_nano_v2
-    shield: eyelash_corne_right eyelash_corne_oled
-    cmake-args: -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+    shield: eyelash_corne_right
     artifact-name: eyelash_corne_right
   - board: nice_nano_v2
-    shield: eyelash_corne_left eyelash_corne_oled
+    shield: eyelash_corne_left
     snippet: studio-rpc-usb-uart
-    cmake-args: >-
-      -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_STUDIO_LOCKING=n
-      -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+    cmake-args: -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_STUDIO_LOCKING=n
     artifact-name: eyelash_corne_studio_left
   - board: nice_nano_v2
     shield: settings_reset
-  # Fallback: same OLED hardware, ZMK's built-in horizontal status screen.
-  - board: nice_nano_v2
-    shield: eyelash_corne_left eyelash_corne_oled
-    artifact-name: eyelash_corne_left_oled_builtin
-  - board: nice_nano_v2
-    shield: eyelash_corne_right eyelash_corne_oled
-    artifact-name: eyelash_corne_right_oled_builtin
