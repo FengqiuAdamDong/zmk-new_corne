@@ -40,6 +40,16 @@ choice ZMK_DISPLAY_WORK_QUEUE
     default ZMK_DISPLAY_WORK_QUEUE_DEDICATED
 endchoice
 
+# A dedicated work queue is not enough on its own: ZMK defaults both this and
+# ZMK_BLE_THREAD_PRIORITY to 5, and Zephyr ships TIMESLICE_SIZE=0, so two
+# preemptible threads at equal priority do not round-robin. A redraw that has
+# the CPU keeps it until it blocks, and a full-frame flush over this board's
+# non-DMA TWI bus is tens of milliseconds. That delays key events on whichever
+# half is mid-redraw, which reads as intermittent lag and, on the peripheral,
+# as right-hand keys landing after left-hand keys pressed later.
+config ZMK_DISPLAY_DEDICATED_THREAD_PRIORITY
+    default 10
+
 endif # ZMK_DISPLAY
 
 if SSD1306
